@@ -53,17 +53,16 @@ export default function App() {
   const [isLoading, setisLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const query = "intel866lar";
+  const query = "interstellar";
   useEffect(function () {
     async function fetchMovies() {
       try {
         setisLoading(true);
         const res = await fetch(
           `https://www.omdbapi.com/?s=${query}&apikey=${KEY}`
-        );
-
-        if (!res.ok)
-          throw new Error("Something went wrong with fetching movies ");
+        ).catch(() => {
+          throw new Error("failed to fetch movie");
+        });
 
         const data = await res.json();
         if (data.Response === "False") throw new Error("Movies not found");

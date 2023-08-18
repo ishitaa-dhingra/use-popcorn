@@ -50,11 +50,22 @@ const KEY = "e7c6ce1b";
 export default function App() {
   const [movies, setMovies] = useState(tempMovieData);
   const [watched, setWatched] = useState(tempWatchedData);
+  const [isLoading, setisLoading] = useState(false);
 
+  const query = "interstellar";
   useEffect(function () {
-    fetch(`https://www.omdbapi.com/?s=Interstellar&apikey=${KEY}`)
-      .then((res) => res.json())
-      .then((data) => setMovies(data.Search || []));
+    async function fetchMovies() {
+      setisLoading(true);
+      const res = await fetch(
+        `https://www.omdbapi.com/?s=${query}&apikey=${KEY}`
+      );
+      const data = await res.json();
+      setMovies(data.Search || []);
+      setisLoading(false);
+      // .then((res) => res.json())
+      // .then((data) => setMovies(data.Search || []));
+    }
+    fetchMovies();
   }, []);
 
   //--------------->we cant set state in render logic beacause it will create a infinite loop for sending req because of seting state render the component again and again thus use useeffect
@@ -68,9 +79,7 @@ export default function App() {
         <NumResults movies={movies} />
       </NavBar>
       <Main>
-        <Box>
-          <MoviesList movies={movies} />
-        </Box>
+        <Box>{isLoading ? <Loader /> : <MoviesList movies={movies} />}</Box>
         <Box>
           <WatchSummary watched={watched} />
           <WatchedMovieList watched={watched} />
@@ -78,6 +87,10 @@ export default function App() {
       </Main>
     </>
   );
+}
+
+function Loader() {
+  return <p className="loader">Loading....</p>;
 }
 
 function NavBar({ children }) {

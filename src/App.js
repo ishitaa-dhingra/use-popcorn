@@ -52,34 +52,45 @@ export default function App() {
   const [watched, setWatched] = useState(tempWatchedData);
   const [isLoading, setisLoading] = useState(false);
   const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
 
-  const query = "interstellar";
-  useEffect(function () {
-    async function fetchMovies() {
-      try {
-        setisLoading(true);
-        const res = await fetch(
-          `https://www.omdbapi.com/?s=${query}&apikey=${KEY}`
-        ).catch(() => {
-          throw new Error("failed to fetch movie");
-        });
+  const tempquery = "interstellar";
+  useEffect(
+    function () {
+      async function fetchMovies() {
+        try {
+          setisLoading(true);
+          setError("");
+          const res = await fetch(
+            `https://www.omdbapi.com/?s=${query}&apikey=${KEY}`
+          ).catch(() => {
+            throw new Error("failed to fetch movie");
+          });
 
-        const data = await res.json();
-        if (data.Response === "False") throw new Error("Movies not found");
+          const data = await res.json();
+          if (data.Response === "False") throw new Error("Movies not found");
 
-        setMovies(data.Search);
-        setisLoading(false);
-      } catch (err) {
-        console.error(err.message);
-        setError(err.message);
-      } finally {
-        setisLoading(false);
+          setMovies(data.Search);
+          setisLoading(false);
+        } catch (err) {
+          console.error(err.message);
+          setError(err.message);
+        } finally {
+          setisLoading(false);
+        }
+        // .then((res) => res.json())
+        // .then((data) => setMovies(data.Search || []));
       }
-      // .then((res) => res.json())
-      // .then((data) => setMovies(data.Search || []));
-    }
-    fetchMovies();
-  }, []);
+
+      if (query.length < 3) {
+        setMovies([]);
+        setError("");
+        return;
+      }
+      fetchMovies();
+    },
+    [query]
+  );
 
   //--------------->we cant set state in render logic beacause it will create a infinite loop for sending req because of seting state render the component again and again thus use useeffect
 
@@ -88,7 +99,7 @@ export default function App() {
       <NavBar>
         {" "}
         <Logo />
-        <Search />
+        <Search query={query} setQuery={setQuery} />
         <NumResults movies={movies} />
       </NavBar>
       <Main>
@@ -136,8 +147,7 @@ function Logo() {
   );
 }
 
-function Search() {
-  const [query, setQuery] = useState("");
+function Search({ query, setQuery }) {
   return (
     <input
       className="search"

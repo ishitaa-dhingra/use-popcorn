@@ -132,6 +132,7 @@ export default function App() {
               selectedid={selectedid}
               oncloseMovie={handleCloseMovie}
               onAddWatchedMovie={handleAddWatchedMovie}
+              watched={watched}
             />
           ) : (
             <>
@@ -236,10 +237,21 @@ function Movie({ movie, onSelectMovie }) {
   );
 }
 
-function MovieDetails({ selectedid, oncloseMovie, onAddWatchedMovie }) {
+function MovieDetails({
+  selectedid,
+  oncloseMovie,
+  onAddWatchedMovie,
+  watched,
+}) {
   const [movie, setmovie] = useState({});
   const [isLoading, setisLoading] = useState(false);
-  const [userRating, setUserRating] = useState("");
+  const [userRating, setUserRating] = useState(0);
+
+  const isWatched = watched.map((movie) => movie.imdbID).includes(selectedid);
+
+  const WatchedUserRating = watched.find(
+    (movie) => movie.imdbID === selectedid
+  )?.userRating;
 
   const {
     Title: title,
@@ -299,25 +311,33 @@ function MovieDetails({ selectedid, oncloseMovie, onAddWatchedMovie }) {
               <p>{genre}</p>
               <p>
                 <span>⭐</span>
-                {imdbRating}IMDB rating
+                {imdbRating} IMDB rating
               </p>
             </div>
           </header>
           <section>
             <div className="rating">
-              <StarRating
-                maxRating={10}
-                size={24}
-                onsetRating={setUserRating}
-              />
+              {!isWatched ? (
+                <>
+                  <StarRating
+                    maxRating={10}
+                    size={24}
+                    onsetRating={setUserRating}
+                  />
 
-              {userRating > 0 && (
-                <button className="btn-add" onClick={handleAdd}>
-                  + Add to List
-                </button>
+                  {userRating > 0 && (
+                    <button className="btn-add" onClick={handleAdd}>
+                      + Add to List
+                    </button>
+                  )}
+                </>
+              ) : (
+                <p>
+                  You have already rated this movie {WatchedUserRating}
+                  <span>⭐</span>
+                </p>
               )}
             </div>
-
             <p>
               <em>{plot}</em>
             </p>

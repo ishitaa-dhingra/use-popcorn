@@ -33,23 +33,23 @@ export default function App() {
         try {
           setisLoading(true);
 
-          setError("");
+          setError(""); // before fetching data error should always be reset
+
           const res = await fetch(
             `https://www.omdbapi.com/?s=${query}&apikey=${KEY}`,
-            { signal: Controller.signal }
+            { signal: Controller.signal } //Browser Api used to abort fetching data when a new key pressed or new character added to prevent race condition
           );
           if (!res.ok)
-            throw new Error("Something went wrong when fetching movies");
+            throw new Error("Something went wrong when fetching movies"); // when the the api key is wrong  then this prints
 
           const data = await res.json();
           if (data.Response === "False") throw new Error("Movies not found");
 
           setMovies(data.Search);
           setError("");
-
-          setisLoading(false);
         } catch (err) {
           if (err.name !== "AbortError") {
+            console.error(err.message);
             setError(err.message);
           }
         } finally {

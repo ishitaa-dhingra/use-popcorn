@@ -4,11 +4,16 @@ import StarRating from "./StarRating";
 const KEY = "e7c6ce1b";
 export default function App() {
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
+
   const [isLoading, setisLoading] = useState(false);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [selectedid, setSelectedId] = useState("");
+  // setting the default data stored in local storage
+  const [watched, setWatched] = useState(function () {
+    const storedValue = localStorage.getItem("watched");
+    return JSON.parse(storedValue);
+  });
 
   function handleSelectedMovie(id) {
     setSelectedId((selectedid) => (id === selectedid ? null : id));
@@ -20,11 +25,21 @@ export default function App() {
 
   function handleAddWatchedMovie(movie) {
     setWatched((watched) => [...watched, movie]);
+
+    //   localStorage.setItem("watched", JSON.stringify([...watched, movie]));       this storing of data in local storage can be done here also but we will do in useEffect hook to make it reusable
   }
 
   function handleDeleteWatchedMovie(id) {
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   }
+
+  // storing data in local storage
+  useEffect(
+    function () {
+      localStorage.setItem("watched", JSON.stringify(watched));
+    },
+    [watched]
+  );
 
   useEffect(
     function () {

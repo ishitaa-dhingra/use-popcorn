@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import StarRating from "./StarRating";
 import { useMovies } from "./useMovies";
+import { useLocalStorageState } from "./useLocalStorageState";
 
 const KEY = "e7c6ce1b";
 
@@ -8,16 +9,11 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [selectedid, setSelectedId] = useState("");
   const { movies, isLoading, error } = useMovies(query);
+  const [watched, setWatched] = useLocalStorageState([], "watched");
 
   useEffect(() => {
     setSelectedId(null);
   }, [movies]);
-
-  // setting the default data stored in local storage
-  const [watched, setWatched] = useState(function () {
-    const storedValue = localStorage.getItem("watched");
-    return JSON.parse(storedValue);
-  });
 
   function handleSelectedMovie(id) {
     setSelectedId((selectedid) => (id === selectedid ? null : id));
@@ -36,14 +32,6 @@ export default function App() {
   function handleDeleteWatchedMovie(id) {
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   }
-
-  // storing data in local storage
-  useEffect(
-    function () {
-      localStorage.setItem("watched", JSON.stringify(watched));
-    },
-    [watched]
-  );
 
   //--------------->we cant set state in render logic beacause it will create a infinite loop for sending req because of seting state render the component again and again thus use useeffect
 

@@ -1,14 +1,18 @@
 import { useEffect, useState, useRef } from "react";
 import StarRating from "./StarRating";
+import { useMovies } from "./useMovies";
 
 const KEY = "e7c6ce1b";
-export default function App() {
-  const [movies, setMovies] = useState([]);
 
-  const [isLoading, setisLoading] = useState(false);
-  const [error, setError] = useState("");
+export default function App() {
   const [query, setQuery] = useState("");
   const [selectedid, setSelectedId] = useState("");
+  const { movies, isLoading, error } = useMovies(query);
+
+  useEffect(() => {
+    setSelectedId(null);
+  }, [movies]);
+
   // setting the default data stored in local storage
   const [watched, setWatched] = useState(function () {
     const storedValue = localStorage.getItem("watched");
@@ -39,54 +43,6 @@ export default function App() {
       localStorage.setItem("watched", JSON.stringify(watched));
     },
     [watched]
-  );
-
-  useEffect(
-    function () {
-      const Controller = new AbortController();
-      async function fetchMovies() {
-        try {
-          setisLoading(true);
-
-          setError(""); // before fetching data error should always be reset
-
-          const res = await fetch(
-            `https://www.omdbapi.com/?s=${query}&apikey=${KEY}`,
-            { signal: Controller.signal } //Browser Api used to abort fetching data when a new key pressed or new character added to prevent race condition
-          );
-          if (!res.ok)
-            throw new Error("Something went wrong when fetching movies"); // when the the api key is wrong  then this prints
-
-          const data = await res.json();
-          if (data.Response === "False") throw new Error("Movies not found");
-
-          setMovies(data.Search);
-          setError("");
-        } catch (err) {
-          if (err.name !== "AbortError") {
-            console.error(err.message);
-            setError(err.message);
-          }
-        } finally {
-          setisLoading(false);
-        }
-        // .then((res) => res.json())
-        // .then((data) => setMovies(data.Search || []));
-      }
-
-      if (query.length < 3) {
-        setMovies([]);
-        setError("");
-        return;
-      }
-      handleCloseMovie();
-      fetchMovies();
-
-      return function () {
-        Controller.abort();
-      };
-    },
-    [query]
   );
 
   //--------------->we cant set state in render logic beacause it will create a infinite loop for sending req because of seting state render the component again and again thus use useeffect
